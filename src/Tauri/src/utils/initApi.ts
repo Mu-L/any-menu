@@ -498,7 +498,7 @@ export function initApi() {
     const maximizeBtn = document.createElement('button')
     maximizeBtn.classList.add('am-titlebar-btn', 'am-titlebar-maximize')
     maximizeBtn.title = '最大化/还原'
-    maximizeBtn.innerText = '最大化/还原'
+    maximizeBtn.innerText = '缩放'
     maximizeBtn.addEventListener('click', () => win.toggleMaximize())
 
     // 监听最大化 / 还原事件
