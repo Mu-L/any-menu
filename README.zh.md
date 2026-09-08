@@ -189,12 +189,16 @@ App版可以在任何文本环境下使用: (旧版截图)
 (非必须，但重要)
 
 - (非必须，非插件api) 面板拆分功能
-- 计算器插件
-- 更完善的 ai 插件
+- 更多插件
+  - 计算器插件
+  - 更完善的 ai 插件
+  - [x] date 插件，输出多种格式 (时间戳、ISO8601、可视化)
+- 安装预设插件组 (For first use)
 
 APP 上线所需最少 TODO:
 
 - 大刷新功能 (整个文档+选中文本的识别再替换)
+  应该很难做到。要么模拟三次复制。要么运气好能用 Windows TSF (Text Services Framework) / macOS 的 Input Method Kit
 - miniEditor
 - 环境的编辑框元素类型判断 (浏览器/WIN Edit/QT)
 
@@ -208,6 +212,12 @@ APP 上线所需最少 TODO:
 - fix bug:
   APP 版本的 reverse 存在问题：窗口没有翻转，倒置子面板的显示如果翻转则会溢出窗口。
   toolbar 的 hover 窗口也会左溢出
+- fix bug:
+  App 版本中，config 和 main 两个页面可能导致召唤面板时某些函数被重复触发两次，
+  如显示面板所需要触发的 `invoke get_size`
+- APP TSF 模块
+- 全局与插件 api 新增: lucide 图标获取，且自带缓存功能
+- 全局与插件通用 api: 将一个 el 设置为窗口/面板的拖拽区域
 
 - [x] idea: Search 框的不输入内容的情况下，背景提示用来显示状态信息也许挺好？（空间合理紧凑）
 

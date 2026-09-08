@@ -1,4 +1,4 @@
-let cache_color = 'red';
+let cache_color = 'red'
 let cache_el = null // 注册的自定义面板
 let cache_hoverEl = null // 悬浮显示的自定义面板
 let cache_el_am_icon = null // 工具栏按钮的图标
