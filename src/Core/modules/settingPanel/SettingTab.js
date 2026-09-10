@@ -80,6 +80,25 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
         tab_content.classList.add('item');
         tab_nav.setAttribute('index', 'web-dict');
         tab_content.setAttribute('index', 'web-dict');
+        let plugins_list = null;
+        let searchQuery = '';
+        {
+            const searchEl = document.createElement('input');
+            tab_content.appendChild(searchEl);
+            searchEl.type = 'text';
+            searchEl.placeholder = ('Search...');
+            let searchDebounceTimer;
+            searchEl.addEventListener('input', () => {
+                searchQuery = searchEl.value.trim().toLowerCase();
+                if (searchDebounceTimer !== undefined)
+                    clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = window.setTimeout(() => {
+                    searchDebounceTimer = undefined;
+                    const currentMode = dataview.dataset.viewmode;
+                    void showDictData(currentMode === 'table' ? 'table' : 'card');
+                }, 300);
+            });
+        }
         const container = document.createElement('div');
         tab_content.appendChild(container);
         const span = document.createElement('span');
@@ -96,30 +115,25 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
             buttons.appendChild(dataview_mode_btn);
             dataview_mode_btn.textContent = t('Change dataview mode');
             dataview_mode_btn.onclick = () => __awaiter(this, void 0, void 0, function* () {
-                let viewmode_ = dataview.dataset.viewmode;
-                let viewmode = (viewmode_ !== 'card') ? 'card' : 'table';
-                void getDictData_and_showData(viewmode);
+                let currentMode = dataview.dataset.viewmode;
+                void showDictData(currentMode === 'table' ? 'card' : 'table');
             });
             const refresh_btn = document.createElement('button');
             buttons.appendChild(refresh_btn);
             refresh_btn.textContent = t('Refresh dict list');
-            refresh_btn.onclick = () => __awaiter(this, void 0, void 0, function* () { return void getDictData_and_showData('card', false); });
+            refresh_btn.onclick = () => __awaiter(this, void 0, void 0, function* () { return void getDictData_and_showDictData('card', false); });
         }
-        let data_cache = null;
-        void getDictData_and_showData();
-        function getDictData_and_showData() {
+        void getDictData_and_showDictData();
+        function getDictData_and_showDictData() {
             return __awaiter(this, arguments, void 0, function* (mode = 'card', is_use_cache = true) {
-                let data;
-                if (is_use_cache && data_cache) {
-                    data = data_cache;
-                }
-                else {
-                    data = yield getDictData();
-                    if (!data)
-                        return;
-                    else
-                        data_cache = data;
-                }
+                yield getDictData(is_use_cache);
+                yield showDictData(mode);
+            });
+        }
+        function showDictData() {
+            return __awaiter(this, arguments, void 0, function* (mode = 'card') {
+                if (!plugins_list)
+                    return;
                 const api = new RepoAPI();
                 const data_header = [
                     ...(global_setting.isDebug ? [{
@@ -250,14 +264,17 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
                     },
                 ];
                 if (mode === 'card')
-                    json2card(dataview, data, data_header);
+                    json2card(dataview, plugins_list, data_header);
                 else
-                    json2table(dataview, data, data_header);
+                    json2table(dataview, plugins_list, data_header);
             });
         }
         function getDictData() {
-            return __awaiter(this, void 0, void 0, function* () {
+            return __awaiter(this, arguments, void 0, function* (is_use_cache = true) {
                 var _a;
+                if (is_use_cache && plugins_list) {
+                    return;
+                }
                 dataview.innerHTML = '';
                 dataview.classList.add('am-hide');
                 span.classList.remove('am-hide');
@@ -277,8 +294,8 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
                 dataview.classList.remove('am-hide');
                 span.classList.add('am-hide');
                 span.textContent = t('Load successed');
-                const dir = ret.data.json;
-                return dir;
+                plugins_list = ret.data.json;
+                return;
             });
         }
     });
@@ -294,7 +311,27 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
         tab_content.classList.add('item');
         tab_nav.setAttribute('index', 'local-dict');
         tab_content.setAttribute('index', 'local-dict');
-        tab_nav.addEventListener('click', () => void getDictData_and_showData());
+        tab_nav.addEventListener('click', () => void getDictData_and_showDictData());
+        let plugins_list = null;
+        let plugins_cache = {};
+        let searchQuery = '';
+        {
+            const searchEl = document.createElement('input');
+            tab_content.appendChild(searchEl);
+            searchEl.type = 'text';
+            searchEl.placeholder = ('Search...');
+            let searchDebounceTimer;
+            searchEl.addEventListener('input', () => {
+                searchQuery = searchEl.value.trim().toLowerCase();
+                if (searchDebounceTimer !== undefined)
+                    clearTimeout(searchDebounceTimer);
+                searchDebounceTimer = window.setTimeout(() => {
+                    searchDebounceTimer = undefined;
+                    const currentMode = dataview.dataset.viewmode;
+                    void showDictData(currentMode === 'table' ? 'table' : 'card');
+                }, 300);
+            });
+        }
         const container = document.createElement('div');
         tab_content.appendChild(container);
         const span = document.createElement('span');
@@ -317,29 +354,25 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
             buttons.appendChild(dataview_mode_btn);
             dataview_mode_btn.textContent = t('Change dataview mode');
             dataview_mode_btn.onclick = () => __awaiter(this, void 0, void 0, function* () {
-                let viewmode_ = dataview.dataset.viewmode;
-                let viewmode = (viewmode_ !== 'card') ? 'card' : 'table';
-                void getDictData_and_showData(viewmode);
+                let currentMode = dataview.dataset.viewmode;
+                void showDictData(currentMode === 'table' ? 'card' : 'table');
             });
             const refresh_btn = document.createElement('button');
             buttons.appendChild(refresh_btn);
             refresh_btn.textContent = t('Refresh dict list');
-            refresh_btn.onclick = () => __awaiter(this, void 0, void 0, function* () { return void getDictData_and_showData(); });
+            refresh_btn.onclick = () => __awaiter(this, void 0, void 0, function* () { return void getDictData_and_showDictData(); });
         }
-        void getDictData_and_showData();
-        function getDictData_and_showData() {
+        void getDictData_and_showDictData();
+        function getDictData_and_showDictData() {
             return __awaiter(this, arguments, void 0, function* (mode = 'card') {
-                const data = yield getDictData();
-                if (!data)
+                yield getDictData();
+                yield showDictData(mode);
+            });
+        }
+        function showDictData() {
+            return __awaiter(this, arguments, void 0, function* (mode = 'card') {
+                if (!plugins_list)
                     return;
-                const path = global_setting.config.cache_paths + 'cache_plugin_meta.json';
-                let plugins_cache = {};
-                try {
-                    const content = yield global_setting.api.readFile(path);
-                    if (content)
-                        plugins_cache = JSON.parse(content);
-                }
-                catch (_a) { }
                 const data_header = [
                     {
                         name: t('Name'),
@@ -414,7 +447,7 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
                                         local_dict_list.splice(index, 1);
                                         local_dict_list_onChange();
                                     }
-                                    void getDictData_and_showData();
+                                    void getDictData_and_showDictData();
                                 });
                             });
                             return true;
@@ -459,9 +492,9 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
                     },
                 ];
                 if (mode === 'card')
-                    json2card(dataview, data, data_header);
+                    json2card(dataview, plugins_list, data_header);
                 else
-                    json2table(dataview, data, data_header);
+                    json2table(dataview, plugins_list, data_header);
             });
         }
         function getDictData() {
@@ -491,7 +524,15 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
                     };
                 });
                 local_dict_list_onChange();
-                return dir;
+                const path = global_setting.config.cache_paths + 'cache_plugin_meta.json';
+                try {
+                    const content = yield global_setting.api.readFile(path);
+                    if (content)
+                        plugins_cache = JSON.parse(content);
+                }
+                catch (_a) { }
+                plugins_list = dir;
+                return;
             });
         }
     });
