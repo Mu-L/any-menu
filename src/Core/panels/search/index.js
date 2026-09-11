@@ -18,7 +18,7 @@ export class AMSearch extends AbsAmPanel {
     init_el() {
         this.el_input = document.createElement('input');
         this.el.appendChild(this.el_input);
-        this.el_input.classList.add('am-search-input');
+        this.el_input.classList.add('am-search-input', 'am-input');
         this.el_input.type = 'search';
         this.el_input.placeholder = 'Search...';
         this.el_input.addEventListener('keydown', (ev) => {

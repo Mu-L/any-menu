@@ -556,16 +556,6 @@ div.editable-textarea-textarea {
 .am-search input.am-search-input {
   height: 100%;
   width: 100%;
-  box-sizing: border-box;
-  padding: 0 12px;
-  border: none;
-  outline: none;
-  color: var(--am-pre-text-color);
-  background: var(--am-pre-bg-color);
-  border-radius: 8px;
-}
-.am-search input.am-search-input:focus {
-  border-color: var(--am-pre-bd-hlcolor);
 }
 
 /* -------------------------------- 输入建议 ----------------------------- */
@@ -1374,6 +1364,13 @@ html, body, #main {
   white-space: normal;
 }
 
+.am-dict-search {
+  position: absolute;
+  top: 8px;
+  width: calc(100% - 16px);
+  height: 26px;
+}
+
 table.dataview-table {
   overflow-x: auto;
   width: 100%;
@@ -1400,7 +1397,7 @@ table.dataview-table .btn {
 .dataview-card {
   display: grid;
   grid-auto-flow: row;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   width: 100%;
   overflow-y: auto;
   gap: 9px;
@@ -1439,6 +1436,9 @@ table.dataview-table .btn {
   height: 24px;
 }
 
+.dataview-table, .dataview-card {
+  margin-top: 34px;
+}
 .dataview-table .btn, .dataview-card .btn {
   height: 26px;
   padding: 0 10px;
@@ -1707,6 +1707,23 @@ div.menu .menu-scroll {
 }
 :root.am-theme-dark #main button:active, :root.am-theme-dark #am-config button:active {
   background-color: rgba(15, 15, 15, 0.4117647059);
+}
+
+.am-btn {
+  cursor: pointer;
+}
+
+.am-input {
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: none;
+  outline: none;
+  color: var(--am-pre-text-color);
+  background: var(--am-pre-bg-color);
+  border-radius: 8px;
+}
+.am-input:focus {
+  border-color: var(--am-pre-bd-hlcolor);
 }
 
 /* -------------------------------- 默认并废弃 --------------------------- */

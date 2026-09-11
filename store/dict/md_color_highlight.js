@@ -23,11 +23,7 @@ export default {
         version: '1.0.4',
         min_app_version: '1.2.4',
         author: 'LincZero',
-        icon: 'lucide-highlighter',
-        css: `
-.md-color-highlight-panel>span {
-  cursor: pointer;
-}`
+        icon: 'lucide-highlighter'
     },
 
     onUnload() {
@@ -114,6 +110,7 @@ export default {
         for (let [key, value] of Object.entries(emoji_dict)) {
             if (key == 'null') value = '🟨' // 特殊，空emoji模式用首个黄色来表示
             const item = document.createElement('span');
+                item.classList.add('am-btn');
                 root.appendChild(item);
                 item.innerText = value;
             item.onclick = (e) => {

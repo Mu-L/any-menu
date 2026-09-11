@@ -86,7 +86,8 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
         {
             const searchEl = document.createElement('input');
             tab_content.appendChild(searchEl);
-            searchEl.type = 'text';
+            searchEl.classList.add('am-input', 'am-dict-search');
+            searchEl.type = 'search';
             searchEl.placeholder = ('Search...');
             let searchDebounceTimer;
             searchEl.addEventListener('input', () => {
@@ -339,7 +340,8 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
         {
             const searchEl = document.createElement('input');
             tab_content.appendChild(searchEl);
-            searchEl.type = 'text';
+            searchEl.classList.add('am-input', 'am-dict-search');
+            searchEl.type = 'search';
             searchEl.placeholder = ('Search...');
             let searchDebounceTimer;
             searchEl.addEventListener('input', () => {
