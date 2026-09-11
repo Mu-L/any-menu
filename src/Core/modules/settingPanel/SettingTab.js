@@ -103,6 +103,7 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
         }
         const container = document.createElement('div');
         tab_content.appendChild(container);
+        container.classList.add('am-dataview');
         const span = document.createElement('span');
         container.appendChild(span);
         span.textContent = `未加载，请手动点击刷新按钮重试`;
@@ -309,6 +310,7 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
                 plugins_list = ret.data.json;
                 plugins_searchMap = plugins_list.map((item) => {
                     return [
+                        item === null || item === void 0 ? void 0 : item.path,
                         item === null || item === void 0 ? void 0 : item.name,
                         item === null || item === void 0 ? void 0 : item.description,
                     ]
@@ -357,6 +359,7 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
         }
         const container = document.createElement('div');
         tab_content.appendChild(container);
+        container.classList.add('am-dataview');
         const span = document.createElement('span');
         container.appendChild(span);
         span.textContent = `未加载，请手动点击刷新按钮重试`;
