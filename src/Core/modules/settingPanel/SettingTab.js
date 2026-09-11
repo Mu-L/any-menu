@@ -81,6 +81,7 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
         tab_nav.setAttribute('index', 'web-dict');
         tab_content.setAttribute('index', 'web-dict');
         let plugins_list = null;
+        let plugins_searchMap = [];
         let searchQuery = '';
         {
             const searchEl = document.createElement('input');
@@ -134,6 +135,16 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
             return __awaiter(this, arguments, void 0, function* (mode = 'card') {
                 if (!plugins_list)
                     return;
+                let plugins_list_search = plugins_list;
+                if (searchQuery.length > 0) {
+                    const keywords = searchQuery.split(/\s+/).filter(Boolean);
+                    plugins_list_search = plugins_list.filter((_, i) => {
+                        const haystack = plugins_searchMap[i];
+                        if (!haystack)
+                            return false;
+                        return keywords.every(keyword => haystack.includes(keyword));
+                    });
+                }
                 const api = new RepoAPI();
                 const data_header = [
                     ...(global_setting.isDebug ? [{
@@ -264,9 +275,9 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
                     },
                 ];
                 if (mode === 'card')
-                    json2card(dataview, plugins_list, data_header);
+                    json2card(dataview, plugins_list_search, data_header);
                 else
-                    json2table(dataview, plugins_list, data_header);
+                    json2table(dataview, plugins_list_search, data_header);
             });
         }
         function getDictData() {
@@ -295,6 +306,15 @@ function initSettingTab_webDict(tab_nav_container, tab_content_container) {
                 span.classList.add('am-hide');
                 span.textContent = t('Load successed');
                 plugins_list = ret.data.json;
+                plugins_searchMap = plugins_list.map((item) => {
+                    return [
+                        item === null || item === void 0 ? void 0 : item.name,
+                        item === null || item === void 0 ? void 0 : item.description,
+                    ]
+                        .filter((v) => typeof v === 'string' && v.length > 0)
+                        .join('\n')
+                        .toLowerCase();
+                });
                 return;
             });
         }
@@ -313,6 +333,7 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
         tab_content.setAttribute('index', 'local-dict');
         tab_nav.addEventListener('click', () => void getDictData_and_showDictData());
         let plugins_list = null;
+        let plugins_searchMap = [];
         let plugins_cache = {};
         let searchQuery = '';
         {
@@ -373,6 +394,16 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
             return __awaiter(this, arguments, void 0, function* (mode = 'card') {
                 if (!plugins_list)
                     return;
+                let plugins_list_search = plugins_list;
+                if (searchQuery.length > 0) {
+                    const keywords = searchQuery.split(/\s+/).filter(Boolean);
+                    plugins_list_search = plugins_list.filter((_, i) => {
+                        const haystack = plugins_searchMap[i];
+                        if (!haystack)
+                            return false;
+                        return keywords.every(keyword => haystack.includes(keyword));
+                    });
+                }
                 const data_header = [
                     {
                         name: t('Name'),
@@ -492,9 +523,9 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
                     },
                 ];
                 if (mode === 'card')
-                    json2card(dataview, plugins_list, data_header);
+                    json2card(dataview, plugins_list_search, data_header);
                 else
-                    json2table(dataview, plugins_list, data_header);
+                    json2table(dataview, plugins_list_search, data_header);
             });
         }
         function getDictData() {
@@ -515,7 +546,7 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
                 span.classList.add('am-hide');
                 span.textContent = t('Load successed');
                 local_dict_list.length = 0;
-                const dir = ret.map(path => {
+                plugins_list = ret.map(path => {
                     const relPath = path.replace(global_setting.config.dict_paths, '');
                     local_dict_list.push({ path: path, relPath: relPath, isDownloaded: false, isEnabled: false });
                     return {
@@ -531,7 +562,17 @@ function initSettingTab_localDict(tab_nav_container, tab_content_container) {
                         plugins_cache = JSON.parse(content);
                 }
                 catch (_a) { }
-                plugins_list = dir;
+                plugins_searchMap = plugins_list.map((item) => {
+                    const meta = plugins_cache[item.path];
+                    return [
+                        item.relPath,
+                        meta === null || meta === void 0 ? void 0 : meta.name,
+                        meta === null || meta === void 0 ? void 0 : meta.description,
+                    ]
+                        .filter((v) => typeof v === 'string' && v.length > 0)
+                        .join('\n')
+                        .toLowerCase();
+                });
                 return;
             });
         }
