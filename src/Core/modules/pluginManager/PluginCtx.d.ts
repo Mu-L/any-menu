@@ -1,4 +1,4 @@
-import type { PluginAppCtx, PluginInterface, PluginRunCtx } from "../../../Type";
+import type { PluginInterface, PluginRunCtx, PluginAppCtx } from "../../../Type";
 export declare namespace PluginCtx {
     function getPluginAppCtx(plugin: PluginInterface): PluginAppCtx;
     function getPluginRunCtx(): PluginRunCtx;

@@ -123,6 +123,7 @@ export interface PluginRunCtx {
     // - historySelected (用来连续复制，或模型连续提供上下文时使用)
     // - 当前选中类型 (文件/图片/文字等...)
   },
+  editorApi?: EditorApi
 }
 
 /** 插件全局上下文
@@ -142,7 +143,7 @@ export interface PluginAppCtx {
     pluginName: string;
     pluginId: string;
   },
-  /** API 接口 */
+  /** 通用 API 接口 */
   api: {
     /**
      * 主动获取运行时的上下文 (低风险)
@@ -150,6 +151,11 @@ export interface PluginAppCtx {
      * 如可能，请使用 run 函数自带的 ctx 参数，而非从这里调用
      */
     getRunCtx: () => PluginRunCtx | null;
+
+    /**
+     * 主动获取运行时的编辑器环境与 api (低风险)
+     */
+    getEditorApi: null | (() => EditorApi | null);
 
     /**
      * 输出文本到当前位置，输出结束后自动隐藏（低风险）
@@ -261,6 +267,25 @@ export interface PluginAppCtx {
   };
 }
 
+/** 不一定存在，编辑器api。仅当调出面板的环境是编辑器且软件能一定程度与该软件交互时，才可用
+ * 
+ * 参考了 Obsidian 的 Editor 接口。
+ *   注意他的定位系统主要是 line-ch 体系，我这里直接使用绝对位置，减少接口复杂度。
+ *   他的编辑和光标改动都会走 tr 事务，我这里不走。
+ *   变更内容时，他主要使用 replaceRange 并配合事务。这点参考了。
+ */
+export interface EditorApi {
+  // 文章内容
+  getText: () => string
+  replaceText: (text: string, selection?: EditorPos) => void // 没有第二个参数时更换全文
+
+  // 光标与选区
+  getSelections(): EditorPos[]
+  setSelection: (selection: EditorPos) => void // 语法糖版本
+  setSelections: (selections: EditorPos[]) => void
+}
+type EditorPos = {start: number, end: number}
+
 /**
  * 请求配置接口
  */
@@ -289,6 +314,8 @@ export interface UrlResponseData {
   originalResponse: any; // 原始响应对象，用于调试
   // 可能还有 arrayBuffer headers json status text
 }
+
+// ----------------- TODO 下面的类型其实与插件开发无关。有空把他们移走 -----------------
 
 /**
  * 面板上的功能项的定义

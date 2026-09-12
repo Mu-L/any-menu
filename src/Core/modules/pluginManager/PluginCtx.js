@@ -26,6 +26,7 @@ export var PluginCtx;
                 console.error('will be override');
                 return null;
             },
+            getEditorApi: global_setting.other.editor_get,
             sendText: (str) => { global_setting.api.sendText(str); activeAMPanel === null || activeAMPanel === void 0 ? void 0 : activeAMPanel.panel_hide(); },
             saveToClipboard: (str) => { global_setting.api.saveToClipboard(str); },
             notify: () => {
@@ -160,21 +161,15 @@ export var PluginCtx;
         };
     }
     PluginCtx.getPluginAppCtx = getPluginAppCtx;
-    const PluginRunCtxDemo = {
-        env: {
-            selectedText: undefined,
-            activeAppName: undefined,
-            activeDocTitle: undefined,
-            activeDocUrl: undefined,
-        },
-    };
     function getPluginRunCtx() {
-        return Object.assign(Object.assign({}, PluginRunCtxDemo), { env: {
+        return {
+            env: {
                 selectedText: global_setting.state.selectedText,
                 activeAppName: global_setting.state.activeAppName,
                 activeDocTitle: global_setting.state.activeDocTitle,
                 activeDocUrl: global_setting.state.activeDocUrl,
-            } });
+            },
+        };
     }
     PluginCtx.getPluginRunCtx = getPluginRunCtx;
     PluginCtx.PluginInterfaceDemo = `\
