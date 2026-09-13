@@ -476,11 +476,17 @@ function initApi_editor_get(): null | EditorApi {
   const editor = activeView.editor
 
   const editorApi: EditorApi = {
-    getText: (): string => { return editor.getValue(); },
-    replaceText: (text: string, selection?: EditorRange): void => {
-      if (selection) { // 提供范围时，替换对应范围
-        const from = editor.offsetToPos(selection.start);
-        const to = editor.offsetToPos(selection.end);
+    getText: (range?: EditorRange): string => {
+      if (!range) return editor.getValue();
+
+      const from = editor.offsetToPos(Math.min(range.start, range.end));
+      const to = editor.offsetToPos(Math.max(range.start, range.end));
+      return editor.getRange(from, to);
+    },
+    replaceText: (text: string, range?: EditorRange): void => {
+      if (range) { // 提供范围时，替换对应范围
+        const from = editor.offsetToPos(range.start);
+        const to = editor.offsetToPos(range.end);
         editor.replaceRange(text, from, to);
       }
       else { // 未提供范围时，替换整篇内容
@@ -495,13 +501,13 @@ function initApi_editor_get(): null | EditorApi {
         return { start: Math.min(a, b), end: Math.max(a, b) };
       });
     },
-    setSelection: (selection: EditorRange): void => {
-      const anchor = editor.offsetToPos(selection.start);
-      const head = editor.offsetToPos(selection.end);
+    setSelection: (range: EditorRange): void => {
+      const anchor = editor.offsetToPos(range.start);
+      const head = editor.offsetToPos(range.end);
       editor.setSelection(anchor, head);
     },
-    setSelections: (selections: EditorRange[]): void => {
-      const ranges = selections.map((sel) => ({
+    setSelections: (range_list: EditorRange[]): void => {
+      const ranges = range_list.map((sel) => ({
         anchor: editor.offsetToPos(sel.start),
         head: editor.offsetToPos(sel.end),
       }));

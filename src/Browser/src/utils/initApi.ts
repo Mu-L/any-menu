@@ -442,18 +442,27 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
   const clamp = (n: number, max: number): number => Math.max(0, Math.min(n, max));
 
   const editorApi: EditorApi = {
-    getText: (): string => {
+    getText: (range?: EditorRange): string => {
       // TODO
       // 注意: 这里会将 `\r\n` 换行符规范化为 `\n`，而 selectionText 那边不转换。
       // 这会导致冲突。
-      return textarea.value;
+
+      if (!range) return textarea.value
+
+      const value = textarea.value;
+      const len = value.length;
+      const start = clamp(range.start, len);
+      const end = clamp(range.end, len);
+      const from = Math.min(start, end);
+      const to = Math.max(start, end);
+      return value.slice(from, to)
     },
 
-    replaceText: (text: string, selection?: EditorRange): void => {
+    replaceText: (text: string, range?: EditorRange): void => {
       const len = textarea.value.length;
-      if (selection) { // 提供范围时，替换对应范围
-        const start = clamp(selection.start, len);
-        const end = clamp(selection.end, len);
+      if (range) { // 提供范围时，替换对应范围
+        const start = clamp(range.start, len);
+        const end = clamp(range.end, len);
         const from = Math.min(start, end);
         const to = Math.max(start, end);
 
@@ -561,13 +570,15 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
   }; */
 
   const editorApi: EditorApi = {
-    getText: (): string => {
-      return root.innerText;
+    getText: (range?: EditorRange): string => {
+      if (!range) return root.innerText;
+
+      return buildRange(range.start, range.end).toString();
     },
 
-    replaceText: (text: string, selection?: EditorRange): void => {
-      if (selection) { // 提供范围时，替换对应范围
-        const range = buildRange(selection.start, selection.end);
+    replaceText: (text: string, editor_range?: EditorRange): void => {
+      if (editor_range) { // 提供范围时，替换对应范围
+        const range = buildRange(editor_range.start, editor_range.end);
         range.deleteContents();
         const textNode = document.createTextNode(text);
         range.insertNode(textNode);
@@ -610,22 +621,22 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
       return ranges;
     },
 
-    setSelection: (selection: EditorRange): void => {
+    setSelection: (editor_range: EditorRange): void => {
       root.focus();
-      const range = buildRange(selection.start, selection.end);
+      const range = buildRange(editor_range.start, editor_range.end);
       const sel = window.getSelection();
       if (!sel) return;
       sel.removeAllRanges();
       sel.addRange(range);
     },
 
-    setSelections: (selections: EditorRange[]): void => {
+    setSelections: (editor_range_list: EditorRange[]): void => {
       const sel = window.getSelection();
       if (!sel) return;
       root.focus();
       sel.removeAllRanges();
       // 浏览器对同一元素内的多 Range 支持有限，逐个 addRange 尝试
-      for (const s of selections) {
+      for (const s of editor_range_list) {
         try {
           sel.addRange(buildRange(s.start, s.end));
         } catch {
