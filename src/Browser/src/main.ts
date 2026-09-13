@@ -174,7 +174,7 @@ ProseMirror markdown demo。这是一个段落，包含**粗体**和*斜体*。
       if (editorApi) {
         const selections = editorApi.getSelections()
         editorApi_show = JSON.stringify({
-          len: editorApi.getText().length,
+          len: editorApi.getRange().length,
           start: selections[0]?.start,
           end: selections[0]?.end,
         }, null, 2)

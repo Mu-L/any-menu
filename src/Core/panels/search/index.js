@@ -60,7 +60,7 @@ export class AMSearch extends AbsAmPanel {
                 selectedText_show = `"${selectedText_show}"`;
             }
             const editorApi = (_b = (_a = global_setting.other).editor_get) === null || _b === void 0 ? void 0 : _b.call(_a);
-            const editorApi_len = editorApi ? editorApi.getText().length : 0;
+            const editorApi_len = editorApi ? editorApi.getRange().length : 0;
             const selectedText_len = (_d = (_c = global_setting.state.selectedText) === null || _c === void 0 ? void 0 : _c.length) !== null && _d !== void 0 ? _d : 0;
             const len_msg = selectedText_len + '/' + editorApi_len;
             this.el_input.placeholder = 'Search...    ' +

@@ -442,7 +442,7 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
   const clamp = (n: number, max: number): number => Math.max(0, Math.min(n, max));
 
   const editorApi: EditorApi = {
-    getText: (range?: EditorRange): string => {
+    getRange: (range?: EditorRange): string => {
       // TODO
       // 注意: 这里会将 `\r\n` 换行符规范化为 `\n`，而 selectionText 那边不转换。
       // 这会导致冲突。
@@ -458,7 +458,7 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
       return value.slice(from, to)
     },
 
-    replaceText: (text: string, range?: EditorRange): void => {
+    replaceRange: (text: string, range?: EditorRange): void => {
       const len = textarea.value.length;
       if (range) { // 提供范围时，替换对应范围
         const start = clamp(range.start, len);
@@ -479,6 +479,18 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
         const caret = text.length;
         textarea.setSelectionRange(caret, caret);
       }
+    },
+
+    replaceRanges(list: {text: string, range: EditorRange}[]) {
+      // 从后往前替换，每次修改只影响已处理过的后半部分
+      let value = textarea.value;
+      const sorted = [...list].sort((a, b) => b.range.start - a.range.start);
+      for (const { text, range } of sorted) {
+        const start = clamp(Math.min(range.start, range.end), value.length);
+        const end = clamp(Math.max(range.start, range.end), value.length);
+        value = value.slice(0, start) + text + value.slice(end);
+      }
+      setValue(value); // 最后统一写回并派发一次 input 事件
     },
 
     getSelections: (): EditorRange[] => {
@@ -570,13 +582,13 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
   }; */
 
   const editorApi: EditorApi = {
-    getText: (range?: EditorRange): string => {
+    getRange: (range?: EditorRange): string => {
       if (!range) return root.innerText;
 
       return buildRange(range.start, range.end).toString();
     },
 
-    replaceText: (text: string, editor_range?: EditorRange): void => {
+    replaceRange: (text: string, editor_range?: EditorRange): void => {
       if (editor_range) { // 提供范围时，替换对应范围
         const range = buildRange(editor_range.start, editor_range.end);
         range.deleteContents();
@@ -600,6 +612,34 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
 
         root.dispatchEvent(new InputEvent('input', { bubbles: true }));
       }
+    },
+
+    replaceRanges(list: {text: string, range: EditorRange}[]) {
+      // 从后往前替换，每次修改只影响已处理过的后半部分
+      const sorted = [...list].sort((a, b) => b.range.start - a.range.start);
+      let lastInserted: Text | null = null;
+
+      for (const { text, range } of sorted) {
+        const r = buildRange(range.start, range.end);
+        r.deleteContents();
+        const textNode = document.createTextNode(text);
+        r.insertNode(textNode);
+        lastInserted = textNode;
+      }
+
+      // 将光标放到最后一个插入的文本末尾（即原文档中 start 最小的那个）
+      // if (lastInserted) {
+      //   const sel = window.getSelection();
+      //   if (sel) {
+      //     const caret = document.createRange();
+      //     caret.setStartAfter(lastInserted);
+      //     caret.collapse(true);
+      //     sel.removeAllRanges();
+      //     sel.addRange(caret);
+      //   }
+      // }
+
+      // root.dispatchEvent(new InputEvent('input', { bubbles: true }));
     },
 
     getSelections: (): EditorRange[] => {

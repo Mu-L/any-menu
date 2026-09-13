@@ -476,14 +476,15 @@ function initApi_editor_get(): null | EditorApi {
   const editor = activeView.editor
 
   const editorApi: EditorApi = {
-    getText: (range?: EditorRange): string => {
+    getRange: (range?: EditorRange): string => {
       if (!range) return editor.getValue();
 
       const from = editor.offsetToPos(Math.min(range.start, range.end));
       const to = editor.offsetToPos(Math.max(range.start, range.end));
       return editor.getRange(from, to);
     },
-    replaceText: (text: string, range?: EditorRange): void => {
+
+    replaceRange: (text: string, range?: EditorRange): void => {
       if (range) { // 提供范围时，替换对应范围
         const from = editor.offsetToPos(range.start);
         const to = editor.offsetToPos(range.end);
@@ -493,7 +494,16 @@ function initApi_editor_get(): null | EditorApi {
         editor.setValue(text);
       }
     },
-    
+    replaceRanges(list: {text: string, range: EditorRange}[]) {
+        // 从后往前替换，避免前面的替换导致后面的偏移失效
+        const sorted = [...list].sort((a, b) => b.range.start - a.range.start);
+        for (const { text, range } of sorted) {
+          const from = editor.offsetToPos(Math.min(range.start, range.end));
+          const to = editor.offsetToPos(Math.max(range.start, range.end));
+          editor.replaceRange(text, from, to);
+        }
+    },
+
     getSelections: (): EditorRange[] => {
       return editor.listSelections().map((range) => {
         const a = editor.posToOffset(range.anchor);

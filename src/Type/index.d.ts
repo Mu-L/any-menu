@@ -276,10 +276,11 @@ export interface PluginAppCtx {
  */
 export interface EditorApi {
   // 文章内容
-  getText: (range?: EditorRange) => string // 第二个参数默认范围为全文
-  replaceText: (text: string, range?: EditorRange) => void // 第二个参数默认范围为全文
+  getRange: (range?: EditorRange) => string // 第二个参数默认范围为全文
 
-  // 光标与选区
+  replaceRange: (text: string, range?: EditorRange) => void // 第二个参数默认范围为全文
+  replaceRanges: (list: {text: string, range: EditorRange}[]) => void
+
   getSelections(): EditorRange[] // 光标为非选中状态时也认为存在选区
   setSelection: (range: EditorRange) => void // 语法糖版本
   setSelections: (range_list: EditorRange[]) => void // 若环境不支持多光标，则仅最后一个生效

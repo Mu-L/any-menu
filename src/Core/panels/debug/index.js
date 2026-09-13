@@ -36,7 +36,7 @@ export class AMDebug extends AbsAmPanel {
             if (editorApi) {
                 const selections = editorApi.getSelections();
                 editorApi_show = JSON.stringify({
-                    len: editorApi.getText().length,
+                    len: editorApi.getRange().length,
                     start: (_c = selections[0]) === null || _c === void 0 ? void 0 : _c.start,
                     end: (_d = selections[0]) === null || _d === void 0 ? void 0 : _d.end,
                 }, null, 2);
