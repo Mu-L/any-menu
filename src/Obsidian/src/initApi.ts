@@ -467,7 +467,7 @@ export function initApi(plugin: Plugin) {
   }
 }
 
-type EditorPos = {start: number, end: number}
+type EditorRange = {start: number, end: number}
 function initApi_editor_get(): null | EditorApi {
   const plugin = global_setting.other.obsidian_plugin as Plugin
   if (!plugin) return null
@@ -477,7 +477,7 @@ function initApi_editor_get(): null | EditorApi {
 
   const editorApi: EditorApi = {
     getText: (): string => { return editor.getValue(); },
-    replaceText: (text: string, selection?: EditorPos): void => {
+    replaceText: (text: string, selection?: EditorRange): void => {
       if (selection) { // 提供范围时，替换对应范围
         const from = editor.offsetToPos(selection.start);
         const to = editor.offsetToPos(selection.end);
@@ -488,19 +488,19 @@ function initApi_editor_get(): null | EditorApi {
       }
     },
     
-    getSelections: (): EditorPos[] => {
+    getSelections: (): EditorRange[] => {
       return editor.listSelections().map((range) => {
         const a = editor.posToOffset(range.anchor);
         const b = editor.posToOffset(range.head);
         return { start: Math.min(a, b), end: Math.max(a, b) };
       });
     },
-    setSelection: (selection: EditorPos): void => {
+    setSelection: (selection: EditorRange): void => {
       const anchor = editor.offsetToPos(selection.start);
       const head = editor.offsetToPos(selection.end);
       editor.setSelection(anchor, head);
     },
-    setSelections: (selections: EditorPos[]): void => {
+    setSelections: (selections: EditorRange[]): void => {
       const ranges = selections.map((sel) => ({
         anchor: editor.offsetToPos(sel.start),
         head: editor.offsetToPos(sel.end),

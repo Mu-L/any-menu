@@ -277,14 +277,14 @@ export interface PluginAppCtx {
 export interface EditorApi {
   // 文章内容
   getText: () => string
-  replaceText: (text: string, selection?: EditorPos) => void // 没有第二个参数时更换全文
+  replaceText: (text: string, range?: EditorRange) => void // 没有第二个参数时更换全文
 
   // 光标与选区
-  getSelections(): EditorPos[] // 光标为非选中状态时也认为存在选区
-  setSelection: (selection: EditorPos) => void // 语法糖版本
-  setSelections: (selections: EditorPos[]) => void // 若环境不支持多光标，则仅最后一个生效
+  getSelections(): EditorRange[] // 光标为非选中状态时也认为存在选区
+  setSelection: (range: EditorRange) => void // 语法糖版本
+  setSelections: (range_list: EditorRange[]) => void // 若环境不支持多光标，则仅最后一个生效
 }
-type EditorPos = {start: number, end: number}
+type EditorRange = {start: number, end: number}
 
 /**
  * 请求配置接口

@@ -416,7 +416,7 @@ export async function initApi_with_opfs() {
   // --- 初始化结束 ---
 }
 
-type EditorPos = {start: number, end: number}
+type EditorRange = {start: number, end: number}
 
 function initApi_editor_get_from_textarea(): null | EditorApi {
   const el = document.activeElement;
@@ -449,7 +449,7 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
       return textarea.value;
     },
 
-    replaceText: (text: string, selection?: EditorPos): void => {
+    replaceText: (text: string, selection?: EditorRange): void => {
       const len = textarea.value.length;
       if (selection) { // 提供范围时，替换对应范围
         const start = clamp(selection.start, len);
@@ -472,7 +472,7 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
       }
     },
 
-    getSelections: (): EditorPos[] => {
+    getSelections: (): EditorRange[] => {
       // textarea 只支持单一选区
       const start = textarea.selectionStart;
       const end = textarea.selectionEnd;
@@ -481,7 +481,7 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
       return [{ start, end }];
     },
 
-    setSelection: (selection: EditorPos): void => {
+    setSelection: (selection: EditorRange): void => {
       const len = textarea.value.length;
       const start = clamp(selection.start, len);
       const end = clamp(selection.end, len);
@@ -489,7 +489,7 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
       textarea.focus();
     },
 
-    setSelections: (selections: EditorPos[]): void => {
+    setSelections: (selections: EditorRange[]): void => {
       // textarea 不支持多选区，退化为使用最后一个
       if (selections.length === 0) return;
       editorApi.setSelection(selections[selections.length - 1]);
@@ -565,7 +565,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
       return root.innerText;
     },
 
-    replaceText: (text: string, selection?: EditorPos): void => {
+    replaceText: (text: string, selection?: EditorRange): void => {
       if (selection) { // 提供范围时，替换对应范围
         const range = buildRange(selection.start, selection.end);
         range.deleteContents();
@@ -591,10 +591,10 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
       }
     },
 
-    getSelections: (): EditorPos[] => {
+    getSelections: (): EditorRange[] => {
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0) return [];
-      const ranges: EditorPos[] = [];
+      const ranges: EditorRange[] = [];
       for (let i = 0; i < sel.rangeCount; i++) {
         const range = sel.getRangeAt(i);
         // 只保留落在当前可编辑元素内的选区
@@ -610,7 +610,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
       return ranges;
     },
 
-    setSelection: (selection: EditorPos): void => {
+    setSelection: (selection: EditorRange): void => {
       root.focus();
       const range = buildRange(selection.start, selection.end);
       const sel = window.getSelection();
@@ -619,7 +619,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
       sel.addRange(range);
     },
 
-    setSelections: (selections: EditorPos[]): void => {
+    setSelections: (selections: EditorRange[]): void => {
       const sel = window.getSelection();
       if (!sel) return;
       root.focus();
