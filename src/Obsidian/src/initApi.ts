@@ -478,12 +478,13 @@ function initApi_editor_get(): null | EditorApi {
   const editorApi: EditorApi = {
     getText: (): string => { return editor.getValue(); },
     replaceText: (text: string, selection?: EditorPos): void => {
-      if (selection) {
+      if (selection) { // 提供范围时，替换对应范围
         const from = editor.offsetToPos(selection.start);
         const to = editor.offsetToPos(selection.end);
         editor.replaceRange(text, from, to);
-      } else {
-        editor.setValue(text); // 未提供范围时，替换整篇文档内容
+      }
+      else { // 未提供范围时，替换整篇内容
+        editor.setValue(text);
       }
     },
     

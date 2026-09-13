@@ -423,12 +423,11 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
   if (!(el instanceof HTMLTextAreaElement)) return null;
   const textarea = el;
 
-  // React 等受控组件需要用原生 setter 改 value，否则状态会被覆盖
+  // 适配: React 等受控组件需要用原生 setter 改 value，否则状态会被覆盖
   const nativeValueSetter = Object.getOwnPropertyDescriptor(
     HTMLTextAreaElement.prototype,
     'value'
   )?.set;
-
   const setValue = (value: string): void => {
     if (nativeValueSetter) {
       nativeValueSetter.call(textarea, value);
@@ -439,31 +438,34 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
   };
 
-  const clamp = (n: number, max: number): number =>
-    Math.max(0, Math.min(n, max));
+  // 避免字符串索引溢出出错
+  const clamp = (n: number, max: number): number => Math.max(0, Math.min(n, max));
 
   const editorApi: EditorApi = {
     getText: (): string => {
+      // TODO
+      // 注意: 这里会将 `\r\n` 换行符规范化为 `\n`，而 selectionText 那边不转换。
+      // 这会导致冲突。
       return textarea.value;
     },
 
     replaceText: (text: string, selection?: EditorPos): void => {
       const len = textarea.value.length;
-      if (selection) {
+      if (selection) { // 提供范围时，替换对应范围
         const start = clamp(selection.start, len);
         const end = clamp(selection.end, len);
         const from = Math.min(start, end);
         const to = Math.max(start, end);
 
         const value = textarea.value;
-        const next = value.slice(0, from) + text + value.slice(to);
-        setValue(next);
+        const newValue = value.slice(0, from) + text + value.slice(to);
+        setValue(newValue);
 
-        // 将光标放到插入文本的末尾
+        // 将光标放到插入文本的末尾 (TODO 临时，未含光标自动继承并校正)
         const caret = from + text.length;
         textarea.setSelectionRange(caret, caret);
-      } else {
-        // 未提供范围时，替换整篇内容
+      }
+      else { // 未提供范围时，替换整篇内容
         setValue(text);
         const caret = text.length;
         textarea.setSelectionRange(caret, caret);
@@ -471,10 +473,11 @@ function initApi_editor_get_from_textarea(): null | EditorApi {
     },
 
     getSelections: (): EditorPos[] => {
-      const start = textarea.selectionStart ?? 0;
-      const end = textarea.selectionEnd ?? 0;
-      // textarea 只支持单一选区；无选区时返回空数组
-      if (start === end) return [];
+      // textarea 只支持单一选区
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      // 策略1: 光标为非选中状态时，也认为存在选区
+      // if (start === end) return []; // 策略2: 认为无选中内容
       return [{ start, end }];
     },
 
@@ -502,7 +505,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
   if (!(el instanceof HTMLElement) || !el.isContentEditable) return null;
   const root = el;
 
-  // ---- 偏移量 <-> DOM Range 互转 ----
+  // 偏移量 <-> DOM Range 互转
   // 将 root 内某个 (node, offset) 位置换算成「相对 root 纯文本起点」的字符偏移
   const nodeToOffset = (node: Node, offset: number): number => {
     const range = document.createRange();
@@ -511,7 +514,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
     return range.toString().length;
   };
 
-  // 将绝对字符偏移换算回 (node, offset)
+  // 将绝对字符偏移换算回 `(node, offset)`
   const offsetToNode = (target: number): { node: Node; offset: number } => {
     let remaining = Math.max(0, target);
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -532,6 +535,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
     return { node: root, offset: 0 };
   };
 
+  // 创建 Range 类型选区
   const buildRange = (start: number, end: number): Range => {
     const s = offsetToNode(Math.min(start, end));
     const e = offsetToNode(Math.max(start, end));
@@ -541,7 +545,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
     return range;
   };
 
-  // ---- 修改内容并保持可撤销（execCommand 会进入 undo 栈）----
+  /* TODO 修改内容并保持可撤销（execCommand 会进入 undo 栈）
   const insertText = (text: string): void => {
     const sel = window.getSelection();
     if (!sel) return;
@@ -554,7 +558,7 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
     range.setEndAfter(textNode);
     sel.removeAllRanges();
     sel.addRange(range);
-  };
+  }; */
 
   const editorApi: EditorApi = {
     getText: (): string => {
@@ -562,13 +566,13 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
     },
 
     replaceText: (text: string, selection?: EditorPos): void => {
-      if (selection) {
+      if (selection) { // 提供范围时，替换对应范围
         const range = buildRange(selection.start, selection.end);
         range.deleteContents();
         const textNode = document.createTextNode(text);
         range.insertNode(textNode);
 
-        // 收起光标到插入文本末尾
+        // 将光标放到插入文本的末尾 (TODO 临时，未含光标自动继承并校正)
         const sel = window.getSelection();
         if (sel) {
           const caret = document.createRange();
@@ -577,11 +581,12 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
           sel.removeAllRanges();
           sel.addRange(caret);
         }
-        // 通知框架内容已变化
+
         root.dispatchEvent(new InputEvent('input', { bubbles: true }));
-      } else {
-        // 未提供范围时整体替换
+      }
+      else { // 未提供范围时，替换整篇内容
         root.innerText = text;
+
         root.dispatchEvent(new InputEvent('input', { bubbles: true }));
       }
     },
@@ -598,7 +603,8 @@ function initApi_editor_get_from_editableEl(): null | EditorApi {
         }
         const start = nodeToOffset(range.startContainer, range.startOffset);
         const end = nodeToOffset(range.endContainer, range.endOffset);
-        if (start === end) continue; // 无选中内容，与其它版本保持一致
+        // 策略1: 光标为非选中状态时，也认为存在选区
+        // if (start === end) continue; // 策略2: 认为无选中内容
         ranges.push({ start: Math.min(start, end), end: Math.max(start, end) });
       }
       return ranges;

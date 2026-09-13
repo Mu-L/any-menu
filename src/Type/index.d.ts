@@ -280,9 +280,9 @@ export interface EditorApi {
   replaceText: (text: string, selection?: EditorPos) => void // 没有第二个参数时更换全文
 
   // 光标与选区
-  getSelections(): EditorPos[]
+  getSelections(): EditorPos[] // 光标为非选中状态时也认为存在选区
   setSelection: (selection: EditorPos) => void // 语法糖版本
-  setSelections: (selections: EditorPos[]) => void
+  setSelections: (selections: EditorPos[]) => void // 若环境不支持多光标，则仅最后一个生效
 }
 type EditorPos = {start: number, end: number}
 

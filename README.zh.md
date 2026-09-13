@@ -207,6 +207,23 @@ APP 上线所需最少 TODO:
 - miniEditor
 - 环境的编辑框元素类型判断 (浏览器/WIN Edit/QT)
 
+### TODO 换行符问题
+
+- 输出: 统一使用 `\n` 输出，被处理和输出过的文本一定是 `\n` 而非 `\r\n`
+- 识别: 当选中带 `\r\n` 的文本后，对其位置与字数的统计，按原来的值来计算
+
+但目前在 textarea 元素上存在问题。在该元素上 selectedText 的获取和 textarea.value 在底层上获取的来源有区别。前者不会自动转换，而后者会自动转换 `\r\n` 为 `\n`
+
+根据 HTML 规范，textarea 元素的值实际上存在三种变体：
+
+- Raw value（原始值）：用户实际输入的未规范化文本，可能包含 `CR`、`LF` 或 `CR LF`。
+  (selectedText from)
+- API value（API 值）：textarea.value 返回的值，换行符被规范化为 `LF`。
+  (textarea.value from)
+- Submission value（提交值）：表单提交时发送的值，换行符被规范化为 `CR LF`。
+
+TODO: EditorApi 的非选中文本也认为是一个零内容的选区，而非无选区
+
 ### FIRST TODO
 
 - ProseMirror 
